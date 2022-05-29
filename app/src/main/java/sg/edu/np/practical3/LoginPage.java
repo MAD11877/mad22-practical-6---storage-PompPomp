@@ -9,6 +9,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuthException;
@@ -26,9 +27,9 @@ public class LoginPage extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.loginpage);
-        databaseReference = FirebaseDatabase.getInstance().getReference("Users").child("mad");
-        TextView username = findViewById(R.id.usernameField);
-        TextView password = findViewById(R.id.passField);
+        databaseReference = FirebaseDatabase.getInstance("https://mad-practical5-default-rtdb.asia-southeast1.firebasedatabase.app/").getReference("Users").child("mad");
+        EditText username = findViewById(R.id.usernameField);
+        EditText password = findViewById(R.id.passField);
 
         Button login = findViewById(R.id.loginButton);
 
@@ -36,6 +37,11 @@ public class LoginPage extends AppCompatActivity {
             @SuppressLint("SetTextI18n")
             @Override
             public void onClick(View view) {
+                String nameInput = username.getText().toString();
+                Log.d("username", nameInput);
+                String passInput = password.getText().toString();
+                Log.d("password", passInput);
+
                 TextView errorBox = findViewById(R.id.errorMsg);
                 if(TextUtils.isEmpty(username.getText().toString())){
                     errorBox.setText("Enter your username");
@@ -47,20 +53,17 @@ public class LoginPage extends AppCompatActivity {
                 }
                 if(password.length() < 3){
                     errorBox.setText("Password must be > 3 characters");
+                    return;
                 }
-                Log.d("Test", "Pass");
                 // Read from the database
                 databaseReference.addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         // This method is called once with the initial value and again
                         // whenever data at this location is updated.
-                        for(DataSnapshot keyNode : dataSnapshot.getChildren()){
-                            Log.d("keyValue", keyNode.getValue().toString());
-                            if(username.getText().toString().equals(keyNode.getValue())){
-                                Intent peoplePage = new Intent(LoginPage.this, ListActivity.class);
-                                startActivity(peoplePage);
-                            }
+                        if(dataSnapshot.child("username").getValue() == nameInput && dataSnapshot.child("password").getValue() == passInput){
+                            Intent peoplePage = new Intent(LoginPage.this, ListActivity.class);
+                            startActivity(peoplePage);
                         }
                     }
 
